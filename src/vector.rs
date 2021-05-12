@@ -131,17 +131,99 @@ impl<T: Numeric> Vector<T, 1> {
     pub fn extend(self, y: T) -> Vector<T, 2> {
         Vector::new([self.0[0][0], y])
     }
+
+    pub fn x(self) -> T {
+        self.0[0][0]
+    }
+
+    pub fn x_mut(&mut self) -> &mut T {
+        &mut self.0[0][0]
+    }
 }
 
 impl<T: Numeric> Vector<T, 2> {
     pub fn extend(self, z: T) -> Vector<T, 3> {
         Vector::new([self.0[0][0], self.0[0][1], z])
     }
+
+    pub fn x(self) -> T {
+        self.0[0][0]
+    }
+
+    pub fn y(self) -> T {
+        self.0[0][1]
+    }
+
+    pub fn x_mut(&mut self) -> &mut T {
+        &mut self.0[0][0]
+    }
+
+    pub fn y_mut(&mut self) -> &mut T {
+        &mut self.0[0][1]
+    }
 }
 
 impl<T: Numeric> Vector<T, 3> {
     pub fn extend(self, w: T) -> Vector<T, 4> {
         Vector::new([self.0[0][0], self.0[0][1], self.0[0][2], w])
+    }
+
+    pub fn x(self) -> T {
+        self.0[0][0]
+    }
+
+    pub fn y(self) -> T {
+        self.0[0][1]
+    }
+
+    pub fn z(self) -> T {
+        self.0[0][2]
+    }
+
+    pub fn x_mut(&mut self) -> &mut T {
+        &mut self.0[0][0]
+    }
+
+    pub fn y_mut(&mut self) -> &mut T {
+        &mut self.0[0][1]
+    }
+
+    pub fn z_mut(&mut self) -> &mut T {
+        &mut self.0[0][2]
+    }
+}
+
+impl<T: Numeric> Vector<T, 4> {
+    pub fn x(self) -> T {
+        self.0[0][0]
+    }
+
+    pub fn y(self) -> T {
+        self.0[0][1]
+    }
+
+    pub fn z(self) -> T {
+        self.0[0][2]
+    }
+
+    pub fn w(self) -> T {
+        self.0[0][3]
+    }
+
+    pub fn x_mut(&mut self) -> &mut T {
+        &mut self.0[0][0]
+    }
+
+    pub fn y_mut(&mut self) -> &mut T {
+        &mut self.0[0][1]
+    }
+
+    pub fn z_mut(&mut self) -> &mut T {
+        &mut self.0[0][2]
+    }
+
+    pub fn w_mut(&mut self) -> &mut T {
+        &mut self.0[0][3]
     }
 }
 

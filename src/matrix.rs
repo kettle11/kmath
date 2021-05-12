@@ -51,11 +51,12 @@ impl<T: Numeric, const R0: usize, const C0_R1: usize, const C1: usize> Mul<Matri
 
     fn mul(self, other: Matrix<T, C0_R1, C1>) -> Matrix<T, R0, C1> {
         let mut output = Matrix::<T, R0, C1>::ZERO;
-        for i in 0..R0 {
-            for j in 0..C1 {
-                output.0[i][j] = self.row(i).dot(Matrix([other.0[j]]));
+        for j in 0..C1 {
+            for i in 0..R0 {
+                output[(i, j)] = self.row(i).dot(Matrix([other.0[j]]));
             }
         }
+
         output
     }
 }
@@ -74,6 +75,7 @@ impl<T: Numeric, const R: usize, const C: usize> Mul<T> for Matrix<T, R, C> {
     }
 }
 
+/*
 impl<T: Numeric, const R: usize, const C: usize> Div for Matrix<T, R, C> {
     type Output = Self;
 
@@ -87,6 +89,7 @@ impl<T: Numeric, const R: usize, const C: usize> Div for Matrix<T, R, C> {
         output
     }
 }
+*/
 
 impl<T: Numeric, const R: usize, const C: usize> Div<T> for Matrix<T, R, C> {
     type Output = Self;
@@ -114,11 +117,13 @@ impl<T: Numeric, const R: usize, const C: usize> SubAssign for Matrix<T, R, C> {
     }
 }
 
+/*
 impl<T: Numeric, const R: usize, const C: usize> DivAssign for Matrix<T, R, C> {
     fn div_assign(&mut self, rhs: Self) {
         *self = *self / rhs
     }
 }
+*/
 
 impl<T: Numeric, const R: usize, const C: usize> MulAssign<T> for Matrix<T, R, C> {
     fn mul_assign(&mut self, rhs: T) {
@@ -227,6 +232,19 @@ impl<T: Numeric + NumericAbs, const R: usize, const C: usize> Matrix<T, R, C> {
 }
 
 impl<T: Numeric, const R: usize, const C: usize> Matrix<T, R, C> {
+    pub fn reciprocal(&self) -> Self
+    where
+        T: NumericFloat,
+    {
+        let mut v = Self::ZERO;
+        for i in 0..R {
+            for j in 0..C {
+                v.0[i][j] = T::ONE / self.0[i][j];
+            }
+        }
+        v
+    }
+
     pub fn as_slice(&self) -> &[T] {
         unsafe { std::slice::from_raw_parts(&self.0[0] as *const T as *const T, 16) }
     }
@@ -388,6 +406,7 @@ impl<T: Numeric + Neg<Output = T>> Matrix<T, 4, 4> {
     }
     */
 
+    // This should be implemented for other matrices as well.
     pub fn inversed(&self) -> Self {
         let (m00, m01, m02, m03) = self.column(0).into();
         let (m10, m11, m12, m13) = self.column(1).into();
