@@ -13,7 +13,7 @@ use crate::*;
 #[repr(C)]
 /// R is the number of rows.
 /// C is the number of columns
-pub struct Matrix<T, const R: usize, const C: usize>(pub(crate) [[T; R]; C]);
+pub struct Matrix<T, const ROWS: usize, const COLUMNS: usize>(pub(crate) [[T; ROWS]; COLUMNS]);
 
 impl<T: Numeric, const R: usize, const C: usize> Default for Matrix<T, R, C> {
     fn default() -> Self {
@@ -295,7 +295,7 @@ impl<T: Numeric, const R: usize, const C: usize> Matrix<T, R, C> {
     // This should probably just return an array
     #[inline]
     pub fn column(&self, index: usize) -> Vector<T, R> {
-        Vector::new(self.0[index])
+        Vector::new_from_slice(self.0[index])
     }
 
     pub fn set_column(&mut self, index: usize, value: Vector<T, R>) {
@@ -393,20 +393,20 @@ impl<T: Numeric + Neg<Output = T>> Matrix<T, 4, 4> {
 
     pub fn transform_point(&self, point: Vector<T, 3>) -> Vector<T, 3> {
         let point = point.extend(T::ONE);
-        Vector::new([
+        Vector::<T, 3>::new(
             self.row(0).dot(point),
             self.row(1).dot(point),
             self.row(2).dot(point),
-        ])
+        )
     }
 
     pub fn transform_vector(&self, vector: Vector<T, 3>) -> Vector<T, 3> {
         let vector = vector.extend(T::ZERO);
-        Vector::new([
+        Vector::<T, 3>::new(
             self.row(0).dot(vector),
             self.row(1).dot(vector),
             self.row(2).dot(vector),
-        ])
+        )
     }
 
     pub fn look_at(from: Vector<T, 3>, target: Vector<T, 3>, up: Vector<T, 3>) -> Self
@@ -478,17 +478,17 @@ impl<T: Numeric + Neg<Output = T>> Matrix<T, 4, 4> {
         let coef22 = m10 * m31 - m30 * m11;
         let coef23 = m10 * m21 - m20 * m11;
 
-        let fac0 = Vector::new([coef00, coef00, coef02, coef03]);
-        let fac1 = Vector::new([coef04, coef04, coef06, coef07]);
-        let fac2 = Vector::new([coef08, coef08, coef10, coef11]);
-        let fac3 = Vector::new([coef12, coef12, coef14, coef15]);
-        let fac4 = Vector::new([coef16, coef16, coef18, coef19]);
-        let fac5 = Vector::new([coef20, coef20, coef22, coef23]);
+        let fac0 = Vector::<T, 4>::new(coef00, coef00, coef02, coef03);
+        let fac1 = Vector::<T, 4>::new(coef04, coef04, coef06, coef07);
+        let fac2 = Vector::<T, 4>::new(coef08, coef08, coef10, coef11);
+        let fac3 = Vector::<T, 4>::new(coef12, coef12, coef14, coef15);
+        let fac4 = Vector::<T, 4>::new(coef16, coef16, coef18, coef19);
+        let fac5 = Vector::<T, 4>::new(coef20, coef20, coef22, coef23);
 
-        let vec0 = Vector::new([m10, m00, m00, m00]);
-        let vec1 = Vector::new([m11, m01, m01, m01]);
-        let vec2 = Vector::new([m12, m02, m02, m02]);
-        let vec3 = Vector::new([m13, m03, m03, m03]);
+        let vec1 = Vector::<T, 4>::new(m11, m01, m01, m01);
+        let vec0 = Vector::<T, 4>::new(m10, m00, m00, m00);
+        let vec2 = Vector::<T, 4>::new(m12, m02, m02, m02);
+        let vec3 = Vector::<T, 4>::new(m13, m03, m03, m03);
 
         let inv0 =
             vec1.mul_by_component(fac0) - vec2.mul_by_component(fac1) + vec3.mul_by_component(fac2);
@@ -499,8 +499,8 @@ impl<T: Numeric + Neg<Output = T>> Matrix<T, 4, 4> {
         let inv3 =
             vec0.mul_by_component(fac2) - vec1.mul_by_component(fac4) + vec2.mul_by_component(fac5);
 
-        let sign_a = Vector::new([T::ONE, -T::ONE, T::ONE, -T::ONE]);
-        let sign_b = Vector::new([-T::ONE, T::ONE, -T::ONE, T::ONE]);
+        let sign_a = Vector::<T, 4>::new(T::ONE, -T::ONE, T::ONE, -T::ONE);
+        let sign_b = Vector::<T, 4>::new(-T::ONE, T::ONE, -T::ONE, T::ONE);
 
         let inverse = Self([
             inv0.mul_by_component(sign_a).into(),

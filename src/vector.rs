@@ -4,8 +4,26 @@ use std::usize;
 pub type Vector<T, const N: usize> = Matrix<T, N, 1>;
 
 impl<T, const N: usize> Vector<T, N> {
-    pub const fn new(values: [T; N]) -> Self {
+    pub const fn new_from_slice(values: [T; N]) -> Self {
         Self([values])
+    }
+}
+
+impl<T> Vector<T, 2> {
+    pub const fn new(x: T, y: T) -> Self {
+        Self([[x, y]])
+    }
+}
+
+impl<T> Vector<T, 3> {
+    pub const fn new(x: T, y: T, z: T) -> Self {
+        Self([[x, y, z]])
+    }
+}
+
+impl<T> Vector<T, 4> {
+    pub const fn new(x: T, y: T, z: T, w: T) -> Self {
+        Self([[x, y, z, w]])
     }
 }
 
@@ -82,44 +100,44 @@ impl<T: Numeric, const N: usize> Vector<T, N> {
     /// If this `Vector` has fewer than 2 components then the extra
     /// components are set to 0.
     pub fn xy(&self) -> Vector<T, 2> {
-        Vector::new([self.0[0][0], if N > 1 { self.0[0][1] } else { T::ZERO }])
+        Vector::<T, 2>::new(self.0[0][0], if N > 1 { self.0[0][1] } else { T::ZERO })
     }
 
     /// Returns a `Vector<T, 3>` with x, y, and z components.
     /// If this `Vector` has fewer than 3 components then the extra
     /// components are set to 0.
     pub fn xyz(&self) -> Vector<T, 3> {
-        Vector::new([
+        Vector::<T, 3>::new(
             self.0[0][0],
             if N > 1 { self.0[0][1] } else { T::ZERO },
             if N > 2 { self.0[0][2] } else { T::ZERO },
-        ])
+        )
     }
 
     /// Returns a `Vector<T, 4>` with x, y, z, w components.
     /// If this `Vector` has fewer than 4 components then the extra
     /// components are set to 0.
     pub fn xyzw(&self) -> Vector<T, 4> {
-        Vector::new([
+        Vector::<T, 4>::new(
             self.0[0][0],
             if N > 1 { self.0[0][1] } else { T::ZERO },
             if N > 2 { self.0[0][2] } else { T::ZERO },
             if N > 3 { self.0[0][2] } else { T::ZERO },
-        ])
+        )
     }
 
     pub fn zxy(&self) -> Vector<T, 3> {
-        Vector::new([
+        Vector::<T, 3>::new(
             if N > 2 { self.0[0][2] } else { T::ZERO },
             self.0[0][0],
             if N > 1 { self.0[0][1] } else { T::ZERO },
-        ])
+        )
     }
 }
 
 impl<T: Numeric> Vector<T, 1> {
     pub fn extend(self, y: T) -> Vector<T, 2> {
-        Vector::new([self.0[0][0], y])
+        Vector::<T, 2>::new(self.0[0][0], y)
     }
 
     pub fn x(self) -> T {
@@ -133,7 +151,7 @@ impl<T: Numeric> Vector<T, 1> {
 
 impl<T: Numeric> Vector<T, 2> {
     pub fn extend(self, z: T) -> Vector<T, 3> {
-        Vector::new([self.0[0][0], self.0[0][1], z])
+        Vector::<T, 3>::new(self.0[0][0], self.0[0][1], z)
     }
 
     pub fn x(self) -> T {
@@ -155,7 +173,7 @@ impl<T: Numeric> Vector<T, 2> {
 
 impl<T: Numeric> Vector<T, 3> {
     pub fn extend(self, w: T) -> Vector<T, 4> {
-        Vector::new([self.0[0][0], self.0[0][1], self.0[0][2], w])
+        Vector::<T, 4>::new(self.0[0][0], self.0[0][1], self.0[0][2], w)
     }
 
     pub fn x(self) -> T {

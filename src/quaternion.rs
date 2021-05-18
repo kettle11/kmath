@@ -6,7 +6,7 @@ use crate::*;
 pub struct Quaternion<T: NumericFloat>(pub(crate) Vector<T, 4>);
 
 impl<T: NumericFloat> Quaternion<T> {
-    pub const IDENTITY: Self = Quaternion(Vector::new([T::ZERO, T::ZERO, T::ZERO, T::ONE]));
+    pub const IDENTITY: Self = Quaternion(Vector::<T, 4>::new(T::ZERO, T::ZERO, T::ZERO, T::ONE));
 
     pub fn from_xyzw(x: T, y: T, z: T, w: T) -> Self {
         Self((x, y, z, w).into())
@@ -16,7 +16,7 @@ impl<T: NumericFloat> Quaternion<T> {
         let axis = axis.normalized();
         let (s, c) = (angle * T::HALF).sin_cos_numeric();
         let v = axis * s;
-        Self(Vector::new([v[0], v[1], v[2], c]))
+        Self(Vector::<T, 4>::new(v[0], v[1], v[2], c))
     }
 
     pub fn as_array(self) -> [T; 4] {
@@ -39,12 +39,12 @@ impl<T: NumericFloat> Mul for Quaternion<T> {
     fn mul(self, b: Self) -> Self::Output {
         let a = self.0;
         let b = b.0;
-        Self(Vector::new([
+        Self(Vector::<T, 4>::new(
             a[3] * b[0] + a[0] * b[3] + a[1] * b[2] - a[2] * b[1],
             a[3] * b[1] - a[0] * b[2] + a[1] * b[3] + a[2] * b[0],
             a[3] * b[2] + a[0] * b[1] - a[1] * b[0] + a[2] * b[3],
             a[3] * b[3] - a[0] * b[0] - a[1] * b[1] - a[2] * b[2],
-        ]))
+        ))
     }
 }
 
@@ -52,7 +52,7 @@ impl<T: NumericFloat> Mul<Vector<T, 3>> for Quaternion<T> {
     type Output = Vector<T, 3>;
     fn mul(self, other: Vector<T, 3>) -> Self::Output {
         let w = self.0[3];
-        let b = Vector::new([self.0[0], self.0[1], self.0[2]]);
+        let b = Vector::<T, 3>::new(self.0[0], self.0[1], self.0[2]);
         let b2 = b.dot(b);
         other * (w * w - b2) + b * (other.dot(b) * T::TWO) + b.cross(other) * (w * T::TWO)
     }
