@@ -1,22 +1,11 @@
 use crate::*;
-use std::{
-    array::TryFromSliceError,
-    convert::{TryFrom, TryInto},
-    usize,
-};
+use std::usize;
 
 pub type Vector<T, const N: usize> = Matrix<T, N, 1>;
 
 impl<T, const N: usize> Vector<T, N> {
     pub const fn new(values: [T; N]) -> Self {
         Self([values])
-    }
-}
-
-impl<T: Numeric, const N: usize> TryFrom<&[T]> for Vector<T, N> {
-    type Error = TryFromSliceError;
-    fn try_from(value: &[T]) -> Result<Self, Self::Error> {
-        Ok(Self([value.try_into()?]))
     }
 }
 
@@ -80,6 +69,7 @@ impl<T: Numeric, const N: usize> Vector<T, N> {
     }
 
     /// Dot product of `self` and `other`
+    #[inline]
     pub fn dot(self, other: Self) -> T {
         let mut total = T::ZERO;
         for i in 0..N {

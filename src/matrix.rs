@@ -1,4 +1,7 @@
 use std::{
+    array::TryFromSliceError,
+    convert::TryFrom,
+    convert::TryInto,
     default::Default,
     ops::{Add, AddAssign, Div, DivAssign, Index, IndexMut, Mul, MulAssign, Neg, Sub, SubAssign},
     usize,
@@ -8,6 +11,8 @@ use crate::*;
 
 #[derive(Copy, Clone, Debug, PartialEq, PartialOrd, Hash)]
 #[repr(C)]
+/// R is the number of rows.
+/// C is the number of columns
 pub struct Matrix<T, const R: usize, const C: usize>(pub(crate) [[T; R]; C]);
 
 impl<T: Numeric, const R: usize, const C: usize> Default for Matrix<T, R, C> {
@@ -44,26 +49,38 @@ impl<T: Numeric, const R: usize, const C: usize> Sub for Matrix<T, R, C> {
     }
 }
 
-impl<T: Numeric, const R0: usize, const C0_R1: usize, const C1: usize> Mul<Matrix<T, C0_R1, C1>>
-    for Matrix<T, R0, C0_R1>
+impl<T: Numeric + NumericFloat, const R0: usize, const C0_R1: usize, const C1: usize>
+    Mul<Matrix<T, C0_R1, C1>> for Matrix<T, R0, C0_R1>
 {
     type Output = Matrix<T, R0, C1>;
-
+    #[inline]
     fn mul(self, other: Matrix<T, C0_R1, C1>) -> Matrix<T, R0, C1> {
-        let mut output = Matrix::<T, R0, C1>::ZERO;
-        for j in 0..C1 {
-            for i in 0..R0 {
-                output[(i, j)] = self.row(i).dot(Matrix([other.0[j]]));
+        match (C0_R1, C1) {
+            (4, 4) => unsafe {
+                let s: Matrix<T, 4, 4> = std::mem::transmute_copy(&self);
+                let other: Matrix<T, 4, 4> = std::mem::transmute_copy(&other);
+                std::mem::transmute_copy(&s.faster_mul(&other))
+            },
+            _ => {
+                let mut output = Matrix::<T, R0, C1>::ZERO;
+
+                for j in 0..C1 {
+                    for i in 0..R0 {
+                        let j = C1 - j - 1;
+                        let i = R0 - i - 1;
+                        output.0[j][i] = self.row(i).dot(Matrix([other.0[j]]));
+                    }
+                }
+                output
             }
         }
-
-        output
     }
 }
 
 impl<T: Numeric, const R: usize, const C: usize> Mul<T> for Matrix<T, R, C> {
     type Output = Self;
 
+    #[inline]
     fn mul(self, other: T) -> Self {
         let mut output = Self::ZERO;
         for i in 0..C {
@@ -126,6 +143,7 @@ impl<T: Numeric, const R: usize, const C: usize> DivAssign for Matrix<T, R, C> {
 */
 
 impl<T: Numeric, const R: usize, const C: usize> MulAssign<T> for Matrix<T, R, C> {
+    #[inline]
     fn mul_assign(&mut self, rhs: T) {
         *self = *self * rhs
     }
@@ -133,7 +151,8 @@ impl<T: Numeric, const R: usize, const C: usize> MulAssign<T> for Matrix<T, R, C
 
 // MulAssign is only implemented for multiplying square matrices by
 // a matrix of the same size.
-impl<T: Numeric, const N: usize> MulAssign<Matrix<T, N, N>> for Matrix<T, N, N> {
+impl<T: Numeric + NumericFloat, const N: usize> MulAssign<Matrix<T, N, N>> for Matrix<T, N, N> {
+    #[inline]
     fn mul_assign(&mut self, other: Matrix<T, N, N>) {
         *self = *self * other
     }
@@ -264,6 +283,7 @@ impl<T: Numeric, const R: usize, const C: usize> Matrix<T, R, C> {
     }
 
     // This should probably just return an array
+    #[inline]
     pub fn row(&self, index: usize) -> Vector<T, C> {
         let mut v: Vector<T, C> = Vector::ZERO;
         for i in 0..C {
@@ -273,6 +293,7 @@ impl<T: Numeric, const R: usize, const C: usize> Matrix<T, R, C> {
     }
 
     // This should probably just return an array
+    #[inline]
     pub fn column(&self, index: usize) -> Vector<T, R> {
         Vector::new(self.0[index])
     }
@@ -324,6 +345,18 @@ impl<T: Numeric + Neg<Output = T>> Matrix<T, 4, 4> {
         self.column(3).xyz()
     }
 
+    pub fn extract_scale(&self) -> Vector<T, 3>
+    where
+        T: NumericFloat,
+    {
+        [
+            self.row(0).xyz().length(),
+            self.row(1).xyz().length(),
+            self.row(2).xyz().length(),
+        ]
+        .into()
+    }
+
     pub fn extract_rotation(&self) -> Quaternion<T>
     where
         T: NumericFloat,
@@ -338,6 +371,14 @@ impl<T: Numeric + Neg<Output = T>> Matrix<T, 4, 4> {
         let m20 = m[(2, 0)];
         let m10 = m[(1, 0)];
         let m01 = m[(0, 1)];
+
+        /*
+        let scale = self.row(0).length();
+
+        let rotation_matrix =
+            Matrix::<T, 3, 3>([[m00, m01, m02], [m10, m11, m12], [m20, m21, m22]])
+                * (T::ONE / scale);
+                */
 
         let w = T::ZERO.numeric_max(T::ONE + m00 + m11 + m22).numeric_sqrt() * T::HALF;
         let x = T::ZERO.numeric_max(T::ONE + m00 - m11 - m22).numeric_sqrt() * T::HALF;
@@ -502,6 +543,8 @@ impl<T: Numeric, const N: usize> Matrix<T, N, N> {
 
 impl<T: Numeric, const R: usize, const C: usize> Index<usize> for Matrix<T, R, C> {
     type Output = T;
+
+    #[inline]
     fn index(&self, index: usize) -> &Self::Output {
         let row = index / R;
         let column = index % R;
@@ -510,6 +553,7 @@ impl<T: Numeric, const R: usize, const C: usize> Index<usize> for Matrix<T, R, C
 }
 
 impl<T: Numeric, const R: usize, const C: usize> IndexMut<usize> for Matrix<T, R, C> {
+    #[inline]
     fn index_mut(&mut self, index: usize) -> &mut Self::Output {
         let row = index / R;
         let column = index % R;
@@ -520,6 +564,7 @@ impl<T: Numeric, const R: usize, const C: usize> IndexMut<usize> for Matrix<T, R
 impl<T: Numeric, const R: usize, const C: usize> Index<(usize, usize)> for Matrix<T, R, C> {
     type Output = T;
     /// Indexes by row then column.
+    #[inline]
     fn index(&self, index: (usize, usize)) -> &Self::Output {
         &self.0[index.1][index.0]
     }
@@ -527,6 +572,7 @@ impl<T: Numeric, const R: usize, const C: usize> Index<(usize, usize)> for Matri
 
 impl<T: Numeric, const R: usize, const C: usize> IndexMut<(usize, usize)> for Matrix<T, R, C> {
     /// Indexes by row then column.
+    #[inline]
     fn index_mut(&mut self, index: (usize, usize)) -> &mut Self::Output {
         &mut self.0[index.1][index.0]
     }
@@ -576,6 +622,62 @@ impl<T: NumericFloat> From<Quaternion<T>> for Matrix<T, 4, 4> {
             [xy - wz, T::ONE - (xx + zz), yz + wx, T::ZERO],
             [xz + wy, yz - wx, T::ONE - (xx + yy), T::ZERO],
             [T::ZERO, T::ZERO, T::ZERO, T::ONE],
+        ])
+    }
+}
+
+impl<T: Numeric, const R: usize, const C: usize, const V: usize> TryFrom<&[T; V]>
+    for Matrix<T, R, C>
+{
+    type Error = TryFromSliceError;
+    fn try_from(value: &[T; V]) -> Result<Self, Self::Error> {
+        let mut v = Self::ZERO;
+        let mut offset = 0;
+        for c in 0..C {
+            let end = offset + R;
+            v.0[c] = value[offset..end].try_into()?;
+            offset = end;
+        }
+        Ok(v)
+    }
+}
+
+impl<T: NumericFloat> Matrix<T, 4, 4> {
+    #[inline]
+    pub fn faster_mul(&self, other: &Self) -> Self {
+        let sa = self.0[0];
+        let sb = self.0[1];
+        let sc = self.0[2];
+        let sd = self.0[3];
+        let oa = other.0[0];
+        let ob = other.0[1];
+        let oc = other.0[2];
+        let od = other.0[3];
+        Self([
+            [
+                (sa[0] * oa[0]) + (sb[0] * oa[1]) + (sc[0] * oa[2]) + (sd[0] * oa[3]),
+                (sa[1] * oa[0]) + (sb[1] * oa[1]) + (sc[1] * oa[2]) + (sd[1] * oa[3]),
+                (sa[2] * oa[0]) + (sb[2] * oa[1]) + (sc[2] * oa[2]) + (sd[2] * oa[3]),
+                (sa[3] * oa[0]) + (sb[3] * oa[1]) + (sc[3] * oa[2]) + (sd[3] * oa[3]),
+            ],
+            [
+                (sa[0] * ob[0]) + (sb[0] * ob[1]) + (sc[0] * ob[2]) + (sd[0] * ob[3]),
+                (sa[1] * ob[0]) + (sb[1] * ob[1]) + (sc[1] * ob[2]) + (sd[1] * ob[3]),
+                (sa[2] * ob[0]) + (sb[2] * ob[1]) + (sc[2] * ob[2]) + (sd[2] * ob[3]),
+                (sa[3] * ob[0]) + (sb[3] * ob[1]) + (sc[3] * ob[2]) + (sd[3] * ob[3]),
+            ],
+            [
+                (sa[0] * oc[0]) + (sb[0] * oc[1]) + (sc[0] * oc[2]) + (sd[0] * oc[3]),
+                (sa[1] * oc[0]) + (sb[1] * oc[1]) + (sc[1] * oc[2]) + (sd[1] * oc[3]),
+                (sa[2] * oc[0]) + (sb[2] * oc[1]) + (sc[2] * oc[2]) + (sd[2] * oc[3]),
+                (sa[3] * oc[0]) + (sb[3] * oc[1]) + (sc[3] * oc[2]) + (sd[3] * oc[3]),
+            ],
+            [
+                (sa[0] * od[0]) + (sb[0] * od[1]) + (sc[0] * od[2]) + (sd[0] * od[3]),
+                (sa[1] * od[0]) + (sb[1] * od[1]) + (sc[1] * od[2]) + (sd[1] * od[3]),
+                (sa[2] * od[0]) + (sb[2] * od[1]) + (sc[2] * od[2]) + (sd[2] * od[3]),
+                (sa[3] * od[0]) + (sb[3] * od[1]) + (sc[3] * od[2]) + (sd[3] * od[3]),
+            ],
         ])
     }
 }
