@@ -114,6 +114,36 @@ fn mat4_inverse_100k_nalgebra(b: &mut Bencher) {
     })
 }
 
+fn mat6_mul_100k_kmath(bench: &mut Bencher) {
+    use kmath::*;
+
+    let a = Matrix::<f32, 6, 6>::IDENTITY;
+    let b = Matrix::<f32, 6, 6>::IDENTITY;
+
+    bench.iter(|| {
+        let mut v_out = Matrix::IDENTITY;
+        for _ in 0..100_000 {
+            v_out += a * b;
+        }
+        v_out
+    })
+}
+
+fn mat6_mul_100k_nalgebra(bench: &mut Bencher) {
+    use nalgebra::*;
+
+    let a = Matrix6::<f32>::identity();
+    let b = Matrix6::<f32>::identity();
+
+    bench.iter(|| {
+        let mut v_out = Matrix6::<f32>::identity();
+        for _ in 0..100_000 {
+            v_out += a * b;
+        }
+        v_out
+    })
+}
+
 benchmark_group!(
     benches,
     mat4_mul_100k_kmath,
@@ -123,6 +153,8 @@ benchmark_group!(
     mat4_inverse_100k_kmath,
     mat4_inverse_100k_glam,
     mat4_inverse_100k_ultraviolet,
-    mat4_inverse_100k_nalgebra
+    mat4_inverse_100k_nalgebra,
+    mat6_mul_100k_kmath,
+    mat6_mul_100k_nalgebra
 );
 benchmark_main!(benches);
