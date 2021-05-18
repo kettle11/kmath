@@ -55,6 +55,9 @@ impl<T: Numeric + NumericFloat, const R0: usize, const C0_R1: usize, const C1: u
     type Output = Matrix<T, R0, C1>;
     #[inline]
     fn mul(self, other: Matrix<T, C0_R1, C1>) -> Matrix<T, R0, C1> {
+        // Godbolt comparing these two:
+        // https://godbolt.org/z/9hvexjjdv
+        // It'd be great to figure out a way to only use the general case.
         match (C0_R1, C1) {
             (4, 4) => unsafe {
                 let s: Matrix<T, 4, 4> = std::mem::transmute_copy(&self);
@@ -63,11 +66,8 @@ impl<T: Numeric + NumericFloat, const R0: usize, const C0_R1: usize, const C1: u
             },
             _ => {
                 let mut output = Matrix::<T, R0, C1>::ZERO;
-
                 for j in 0..C1 {
                     for i in 0..R0 {
-                        let j = C1 - j - 1;
-                        let i = R0 - i - 1;
                         output.0[j][i] = self.row(i).dot(Matrix([other.0[j]]));
                     }
                 }
