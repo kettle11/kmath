@@ -183,6 +183,12 @@ impl<T: Numeric, const R: usize, const C: usize> Matrix<T, R, C> {
     pub const MAX: Self = Self([[T::MAX; R]; C]);
     pub const MIN: Self = Self([[T::MIN; R]; C]);
 
+    /// Creates a new `Matrix` with `value` in each component.
+    /// Also referred to as `broadcast` or `splat` in other libraries.
+    pub fn fill(value: T) -> Self {
+        Self([[value; R]; C])
+    }
+
     pub fn min(self, other: Self) -> Self {
         let mut output = Self::ZERO;
         for i in 0..C {
