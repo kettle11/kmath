@@ -204,7 +204,7 @@ impl<T: Numeric, const R: usize, const C: usize> Matrix<T, R, C> {
     }
 
     /// Returns the value of the minimum component.
-    pub fn min_by_component(self) -> T {
+    pub fn min_component(self) -> T {
         let mut min = T::MAX;
         for i in 0..R {
             for j in 0..C {
@@ -215,7 +215,7 @@ impl<T: Numeric, const R: usize, const C: usize> Matrix<T, R, C> {
     }
 
     /// Returns the value of the maximum component.
-    pub fn max_by_component(self) -> T {
+    pub fn max_component(self) -> T {
         let mut max = T::MAX;
         for i in 0..R {
             for j in 0..C {
@@ -264,15 +264,11 @@ impl<T: Numeric, const R: usize, const C: usize> Matrix<T, R, C> {
         v
     }
 
-    pub fn as_slice(&self) -> &[T] {
-        unsafe { std::slice::from_raw_parts(&self.0[0] as *const T as *const T, 16) }
-    }
-
     pub fn is_nan(&self) -> bool
     where
         T: NumericFloat,
     {
-        for v in self.0 {
+        for v in &self.0 {
             for j in v {
                 if j.is_nan_numeric() {
                     return true;
@@ -306,9 +302,20 @@ impl<T: Numeric, const R: usize, const C: usize> Matrix<T, R, C> {
     pub fn column_mut(&mut self, index: usize) -> &mut [T; R] {
         &mut self.0[index]
     }
+
+    #[inline]
+    pub fn as_slice(&self) -> &[T] {
+        // This is safe because we are statically bounding our slices to the size of these
+        // vectors
+        unsafe { std::slice::from_raw_parts(std::mem::transmute(&self.0), R * C) }
+    }
 }
 
-impl<T: Numeric + Neg<Output = T>> Matrix<T, 4, 4> {
+impl<T: NumericFloat> Matrix<T, 4, 4> {
+    pub fn as_array(&self) -> &[T; 16] {
+        self.as_slice().try_into().unwrap()
+    }
+
     pub fn from_translation(translation: Vector<T, 3>) -> Self {
         Self([
             [T::ONE, T::ZERO, T::ZERO, T::ZERO],
@@ -328,17 +335,25 @@ impl<T: Numeric + Neg<Output = T>> Matrix<T, 4, 4> {
     pub fn from_translation_rotation_scale(
         translation: Vector<T, 3>,
         rotation: Quaternion<T>,
-        scale: T,
+        scale: Vector<T, 3>,
     ) -> Self
     where
         T: NumericFloat,
     {
         let mut m: Self = rotation.into();
-        m.set_column(0, m.column(0) * scale);
-        m.set_column(1, m.column(1) * scale);
-        m.set_column(2, m.column(2) * scale);
+        m.set_column(0, m.column(0) * scale[0]);
+        m.set_column(1, m.column(1) * scale[1]);
+        m.set_column(2, m.column(2) * scale[2]);
         m.set_column(3, translation.extend(T::ONE));
         m
+    }
+
+    pub fn to_translation_rotation_scale(&self) -> (Vector<T, 3>, Quaternion<T>, Vector<T, 3>) {
+        (
+            self.extract_translation(),
+            self.extract_rotation(),
+            self.extract_scale(),
+        )
     }
 
     pub fn extract_translation(&self) -> Vector<T, 3> {
@@ -350,35 +365,52 @@ impl<T: Numeric + Neg<Output = T>> Matrix<T, 4, 4> {
         T: NumericFloat,
     {
         [
-            self.row(0).xyz().length(),
-            self.row(1).xyz().length(),
-            self.row(2).xyz().length(),
+            self.column(0).length(),
+            self.column(1).length(),
+            self.column(2).length(),
         ]
         .into()
     }
 
-    pub fn extract_rotation(&self) -> Quaternion<T>
-    where
-        T: NumericFloat,
-    {
-        let m = self;
-        let m00 = m[(0, 0)];
-        let m11 = m[(1, 1)];
-        let m22 = m[(2, 2)];
-        let m21 = m[(2, 1)];
-        let m12 = m[(1, 2)];
-        let m02 = m[(0, 2)];
-        let m20 = m[(2, 0)];
-        let m10 = m[(1, 0)];
-        let m01 = m[(0, 1)];
+    fn extract_rotation_scale(&self) -> (Quaternion<T>, Vector<T, 3>) {
+        let scale: Vector<T, 3> = [
+            self.column(0).length(),
+            self.column(1).length(),
+            self.column(2).length(),
+        ]
+        .into();
 
-        /*
-        let scale = self.row(0).length();
+        let rotation = Matrix([
+            [
+                self.0[0][0] / scale[0],
+                self.0[0][1] / scale[0],
+                self.0[0][2] / scale[0],
+                T::ZERO,
+            ],
+            [
+                self.0[1][0] / scale[1],
+                self.0[1][1] / scale[1],
+                self.0[1][2] / scale[1],
+                T::ZERO,
+            ],
+            [
+                self.0[2][0] / scale[2],
+                self.0[2][1] / scale[2],
+                self.0[2][2] / scale[2],
+                T::ZERO,
+            ],
+            [T::ZERO, T::ZERO, T::ZERO, T::ONE],
+        ]);
 
-        let rotation_matrix =
-            Matrix::<T, 3, 3>([[m00, m01, m02], [m10, m11, m12], [m20, m21, m22]])
-                * (T::ONE / scale);
-                */
+        let m00 = rotation[(0, 0)];
+        let m11 = rotation[(1, 1)];
+        let m22 = rotation[(2, 2)];
+        let m21 = rotation[(2, 1)];
+        let m12 = rotation[(1, 2)];
+        let m02 = rotation[(0, 2)];
+        let m20 = rotation[(2, 0)];
+        let m10 = rotation[(1, 0)];
+        let m01 = rotation[(0, 1)];
 
         let w = T::ZERO.numeric_max(T::ONE + m00 + m11 + m22).numeric_sqrt() * T::HALF;
         let x = T::ZERO.numeric_max(T::ONE + m00 - m11 - m22).numeric_sqrt() * T::HALF;
@@ -388,7 +420,14 @@ impl<T: Numeric + Neg<Output = T>> Matrix<T, 4, 4> {
         let x = x.copysign_numeric(m21 - m12);
         let y = y.copysign_numeric(m02 - m20);
         let z = z.copysign_numeric(m10 - m01);
-        Quaternion((x, y, z, w).into())
+        (Quaternion((x, y, z, w).into()), scale)
+    }
+
+    pub fn extract_rotation(&self) -> Quaternion<T>
+    where
+        T: NumericFloat,
+    {
+        self.extract_rotation_scale().0
     }
 
     pub fn transform_point(&self, point: Vector<T, 3>) -> Vector<T, 3> {
@@ -644,7 +683,7 @@ impl<T: Numeric, const R: usize, const C: usize, const V: usize> TryFrom<&[T; V]
 
 impl<T: NumericFloat> Matrix<T, 4, 4> {
     #[inline]
-    pub fn faster_mul(&self, other: &Self) -> Self {
+    fn faster_mul(&self, other: &Self) -> Self {
         let sa = self.0[0];
         let sb = self.0[1];
         let sc = self.0[2];

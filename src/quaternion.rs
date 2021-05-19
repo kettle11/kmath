@@ -24,9 +24,9 @@ impl<T: NumericFloat> Quaternion<T> {
     }
 
     pub fn from_yaw_pitch_roll(yaw: T, pitch: T, roll: T) -> Self {
-        Self::from_angle_axis(yaw, <Vector<T, 3>>::UNIT_Y)
-            * Self::from_angle_axis(pitch, <Vector<T, 3>>::UNIT_X)
-            * Self::from_angle_axis(roll, <Vector<T, 3>>::UNIT_Z)
+        Self::from_angle_axis(yaw, <Vector<T, 3>>::Y)
+            * Self::from_angle_axis(pitch, <Vector<T, 3>>::X)
+            * Self::from_angle_axis(roll, <Vector<T, 3>>::Z)
     }
 
     pub fn rotate_vector3(&self, v: Vector<T, 3>) -> Vector<T, 3> {
@@ -74,5 +74,11 @@ impl<T: NumericFloat> From<(T, T, T, T)> for Quaternion<T> {
 impl<T: NumericFloat> From<[T; 4]> for Quaternion<T> {
     fn from(value: [T; 4]) -> Quaternion<T> {
         Self(value.into())
+    }
+}
+
+impl<T: NumericFloat> From<Quaternion<T>> for [T; 4] {
+    fn from(value: Quaternion<T>) -> [T; 4] {
+        value.0.into()
     }
 }

@@ -248,7 +248,7 @@ impl<T: Numeric + NumericSqrt, const N: usize> Vector<T, N> {
 }
 
 impl<T: Numeric> Vector<T, 1> {
-    pub const UNIT_X: Self = {
+    pub const X: Self = {
         let mut v = Self::ZERO;
         v.0[0][0] = T::ONE;
         v
@@ -256,12 +256,12 @@ impl<T: Numeric> Vector<T, 1> {
 }
 
 impl<T: Numeric> Vector<T, 2> {
-    pub const UNIT_X: Self = {
+    pub const X: Self = {
         let mut v = Self::ZERO;
         v.0[0][0] = T::ONE;
         v
     };
-    pub const UNIT_Y: Self = {
+    pub const Y: Self = {
         let mut v = Self::ZERO;
         v.0[0][1] = T::ONE;
         v
@@ -269,17 +269,17 @@ impl<T: Numeric> Vector<T, 2> {
 }
 
 impl<T: Numeric> Vector<T, 3> {
-    pub const UNIT_X: Self = {
+    pub const X: Self = {
         let mut v = Self::ZERO;
         v.0[0][0] = T::ONE;
         v
     };
-    pub const UNIT_Y: Self = {
+    pub const Y: Self = {
         let mut v = Self::ZERO;
         v.0[0][1] = T::ONE;
         v
     };
-    pub const UNIT_Z: Self = {
+    pub const Z: Self = {
         let mut v = Self::ZERO;
         v.0[0][2] = T::ONE;
         v
@@ -287,22 +287,22 @@ impl<T: Numeric> Vector<T, 3> {
 }
 
 impl<T: Numeric> Vector<T, 4> {
-    pub const UNIT_X: Self = {
+    pub const X: Self = {
         let mut v = Self::ZERO;
         v.0[0][0] = T::ONE;
         v
     };
-    pub const UNIT_Y: Self = {
+    pub const Y: Self = {
         let mut v = Self::ZERO;
         v.0[0][1] = T::ONE;
         v
     };
-    pub const UNIT_Z: Self = {
+    pub const Z: Self = {
         let mut v = Self::ZERO;
         v.0[0][2] = T::ONE;
         v
     };
-    pub const UNIT_W: Self = {
+    pub const W: Self = {
         let mut v = Self::ZERO;
         v.0[0][3] = T::ONE;
         v
