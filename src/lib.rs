@@ -13,6 +13,8 @@ pub use quaternion::*;
 pub use vector::*;
 
 mod default_types {
+    use crate::geometry::BoundingBox;
+
     use super::{Matrix, Quaternion, Vector};
     pub type Vec2 = Vector<f32, 2>;
     pub type Vec3 = Vector<f32, 3>;
@@ -26,6 +28,7 @@ mod default_types {
     pub type Mat4 = Matrix<f32, 4, 4>;
 
     pub type Quat = Quaternion<f32>;
+    pub type Rect = BoundingBox<f32, 2>;
 }
 pub use default_types::*;
 
@@ -33,3 +36,4 @@ pub use default_types::*;
 mod tests;
 
 pub mod geometry;
+pub use geometry::*;

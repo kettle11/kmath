@@ -37,12 +37,13 @@ pub fn closest_point_on_line_segment<T: NumericFloat, const DIMENSIONS: usize>(
 }
 
 /// A rectangle in 2D, a rectangular prism in 3D.
-pub struct Rect<T, const DIMENSIONS: usize> {
+#[derive(Clone, Debug, Copy)]
+pub struct BoundingBox<T, const DIMENSIONS: usize> {
     pub min: Vector<T, DIMENSIONS>,
     pub max: Vector<T, DIMENSIONS>,
 }
 
-impl<T: Numeric + PartialOrd, const DIMENSIONS: usize> Rect<T, DIMENSIONS> {
+impl<T: Numeric + PartialOrd + 'static, const DIMENSIONS: usize> BoundingBox<T, DIMENSIONS> {
     pub const ZERO: Self = Self {
         min: Vector::<T, DIMENSIONS>::ZERO,
         max: Vector::<T, DIMENSIONS>::ZERO,
@@ -50,6 +51,14 @@ impl<T: Numeric + PartialOrd, const DIMENSIONS: usize> Rect<T, DIMENSIONS> {
 
     pub fn new(min: Vector<T, DIMENSIONS>, max: Vector<T, DIMENSIONS>) -> Self {
         Self { min, max }
+    }
+
+    pub fn from_points<'a>(points: impl IntoIterator<Item = &'a Vector<T, DIMENSIONS>>) -> Self {
+        let (min, max) = points.into_iter().fold(
+            (Vector::<T, DIMENSIONS>::MAX, Vector::<T, DIMENSIONS>::MIN),
+            |(min, max), v| (min.min(*v), max.max(*v)),
+        );
+        BoundingBox { min, max }
     }
 
     pub fn contains_point(&self, point: Vector<T, DIMENSIONS>) -> bool {
@@ -67,7 +76,7 @@ impl<T: Numeric + PartialOrd, const DIMENSIONS: usize> Rect<T, DIMENSIONS> {
         }
     }
 
-    /// Returns the area of a 2D `Rect`, or the volume of a 3D `Rect`
+    /// Returns the area of a 2D `BoundingBox`, or the volume of a 3D `BoundingBox`
     pub fn area(&self) -> T {
         let size = self.max - self.min;
         let mut a = size[0];
@@ -77,7 +86,7 @@ impl<T: Numeric + PartialOrd, const DIMENSIONS: usize> Rect<T, DIMENSIONS> {
         a
     }
 
-    /// Creates a new `Rect` that encompasses `self` and `other`
+    /// Creates a new `BoundingBox` that encompasses `self` and `other`
     pub fn union(self, other: Self) -> Self {
         Self {
             min: self.min.min(other.min),
@@ -85,7 +94,7 @@ impl<T: Numeric + PartialOrd, const DIMENSIONS: usize> Rect<T, DIMENSIONS> {
         }
     }
 
-    /// Creates a new `Rect` with only the part that is contained in both `Rect`s
+    /// Creates a new `BoundingBox` with only the part that is contained in both `BoundingBox`s
     /// If they don't overlap this will be empty.
     pub fn intersection(self, other: Self) -> Self {
         Self {
