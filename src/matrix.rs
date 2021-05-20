@@ -21,6 +21,12 @@ impl<T: Numeric, const R: usize, const C: usize> Default for Matrix<T, R, C> {
     }
 }
 
+impl<const R: usize, const C: usize> Default for Matrix<bool, R, C> {
+    fn default() -> Self {
+        Self::FALSE
+    }
+}
+
 impl<T: Numeric, const R: usize, const C: usize> Add for Matrix<T, R, C> {
     type Output = Self;
 
@@ -262,8 +268,8 @@ impl<T: Numeric, const R: usize, const C: usize> Matrix<T, R, C> {
         T: NumericFloat,
     {
         let mut v = Self::ZERO;
-        for i in 0..R {
-            for j in 0..C {
+        for i in 0..C {
+            for j in 0..R {
                 v.0[i][j] = T::ONE / self.0[i][j];
             }
         }
@@ -724,5 +730,86 @@ impl<T: NumericFloat> Matrix<T, 4, 4> {
                 (sa[3] * od[0]) + (sb[3] * od[1]) + (sc[3] * od[2]) + (sd[3] * od[3]),
             ],
         ])
+    }
+}
+
+impl<const ROWS: usize, const COLUMNS: usize> Matrix<bool, ROWS, COLUMNS> {
+    pub const TRUE: Self = Self([[true; ROWS]; COLUMNS]);
+    pub const FALSE: Self = Self([[false; ROWS]; COLUMNS]);
+
+    pub fn all(self) -> bool {
+        for c in &self.0 {
+            for r in c {
+                if !r {
+                    return false;
+                }
+            }
+        }
+        true
+    }
+
+    pub fn any(self) -> bool {
+        for c in &self.0 {
+            for r in c {
+                if *r {
+                    return true;
+                }
+            }
+        }
+        false
+    }
+}
+
+impl<T: PartialOrd, const ROWS: usize, const COLUMNS: usize> Matrix<T, ROWS, COLUMNS> {
+    pub fn less_than_per_component(self, other: Self) -> Matrix<bool, ROWS, COLUMNS> {
+        let mut m = Matrix::<bool, ROWS, COLUMNS>::default();
+        for c in 0..COLUMNS {
+            for r in 0..ROWS {
+                m.0[c][r] = self.0[c][r] < other.0[c][r]
+            }
+        }
+        m
+    }
+
+    pub fn less_than_or_equal_per_component(self, other: Self) -> Matrix<bool, ROWS, COLUMNS> {
+        let mut m = Matrix::<bool, ROWS, COLUMNS>::default();
+        for c in 0..COLUMNS {
+            for r in 0..ROWS {
+                m.0[c][r] = self.0[c][r] <= other.0[c][r]
+            }
+        }
+        m
+    }
+
+    pub fn greater_than_per_component(self, other: Self) -> Matrix<bool, ROWS, COLUMNS> {
+        let mut m = Matrix::<bool, ROWS, COLUMNS>::default();
+        for c in 0..COLUMNS {
+            for r in 0..ROWS {
+                m.0[c][r] = self.0[c][r] > other.0[c][r]
+            }
+        }
+        m
+    }
+
+    pub fn greater_than_or_equal_per_component(self, other: Self) -> Matrix<bool, ROWS, COLUMNS> {
+        let mut m = Matrix::<bool, ROWS, COLUMNS>::default();
+        for c in 0..COLUMNS {
+            for r in 0..ROWS {
+                m.0[c][r] = self.0[c][r] >= other.0[c][r]
+            }
+        }
+        m
+    }
+}
+
+impl<T: Eq, const ROWS: usize, const COLUMNS: usize> Matrix<T, ROWS, COLUMNS> {
+    pub fn equal_per_component(self, other: Self) -> Matrix<bool, ROWS, COLUMNS> {
+        let mut m = Matrix::<bool, ROWS, COLUMNS>::default();
+        for c in 0..COLUMNS {
+            for r in 0..ROWS {
+                m.0[c][r] = self.0[c][r] == other.0[c][r]
+            }
+        }
+        m
     }
 }

@@ -31,3 +31,5 @@ pub use default_types::*;
 
 #[cfg(test)]
 mod tests;
+
+pub mod geometry;

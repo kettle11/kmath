@@ -135,11 +135,33 @@ impl<T: Numeric, const N: usize> Vector<T, N> {
     }
 }
 
-impl<T: Numeric> Vector<T, 1> {
-    pub fn extend(self, y: T) -> Vector<T, 2> {
+pub trait Extend<T> {
+    type ExtendTo;
+    fn extend(self, value: T) -> Self::ExtendTo;
+}
+
+impl<T: Numeric> Extend<T> for Vector<T, 1> {
+    type ExtendTo = Vector<T, 2>;
+    fn extend(self, y: T) -> Self::ExtendTo {
         Vector::<T, 2>::new(self.0[0][0], y)
     }
+}
 
+impl<T: Numeric> Extend<T> for Vector<T, 2> {
+    type ExtendTo = Vector<T, 3>;
+    fn extend(self, z: T) -> Self::ExtendTo {
+        Vector::<T, 3>::new(self.0[0][0], self.0[0][1], z)
+    }
+}
+
+impl<T: Numeric> Extend<T> for Vector<T, 3> {
+    type ExtendTo = Vector<T, 4>;
+    fn extend(self, w: T) -> Self::ExtendTo {
+        Vector::<T, 4>::new(self.0[0][0], self.0[0][1], self.0[0][2], w)
+    }
+}
+
+impl<T: Numeric> Vector<T, 1> {
     pub fn x(self) -> T {
         self.0[0][0]
     }
@@ -150,10 +172,6 @@ impl<T: Numeric> Vector<T, 1> {
 }
 
 impl<T: Numeric> Vector<T, 2> {
-    pub fn extend(self, z: T) -> Vector<T, 3> {
-        Vector::<T, 3>::new(self.0[0][0], self.0[0][1], z)
-    }
-
     pub fn x(self) -> T {
         self.0[0][0]
     }
@@ -172,10 +190,6 @@ impl<T: Numeric> Vector<T, 2> {
 }
 
 impl<T: Numeric> Vector<T, 3> {
-    pub fn extend(self, w: T) -> Vector<T, 4> {
-        Vector::<T, 4>::new(self.0[0][0], self.0[0][1], self.0[0][2], w)
-    }
-
     pub fn x(self) -> T {
         self.0[0][0]
     }
