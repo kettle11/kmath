@@ -826,3 +826,115 @@ impl<T: Eq, const ROWS: usize, const COLUMNS: usize> Matrix<T, ROWS, COLUMNS> {
         m
     }
 }
+
+// ------- More Mul implementations --------
+// I don't like these implementations but couldn't figure out a better way quickly.
+// It'd be great to remove them and implement this generically.
+
+impl<const R: usize, const C: usize> Mul<Matrix<f32, R, C>> for f32 {
+    type Output = Matrix<f32, R, C>;
+
+    #[inline]
+    fn mul(self, other: Matrix<f32, R, C>) -> Self::Output {
+        other * self
+    }
+}
+
+impl<const R: usize, const C: usize> Mul<Matrix<f64, R, C>> for f64 {
+    type Output = Matrix<f64, R, C>;
+
+    #[inline]
+    fn mul(self, other: Matrix<f64, R, C>) -> Self::Output {
+        other * self
+    }
+}
+
+impl<const R: usize, const C: usize> Mul<Matrix<i8, R, C>> for i8 {
+    type Output = Matrix<i8, R, C>;
+
+    #[inline]
+    fn mul(self, other: Matrix<i8, R, C>) -> Self::Output {
+        other * self
+    }
+}
+
+impl<const R: usize, const C: usize> Mul<Matrix<i16, R, C>> for i16 {
+    type Output = Matrix<i16, R, C>;
+
+    #[inline]
+    fn mul(self, other: Matrix<i16, R, C>) -> Self::Output {
+        other * self
+    }
+}
+
+impl<const R: usize, const C: usize> Mul<Matrix<i32, R, C>> for i32 {
+    type Output = Matrix<i32, R, C>;
+
+    #[inline]
+    fn mul(self, other: Matrix<i32, R, C>) -> Self::Output {
+        other * self
+    }
+}
+
+impl<const R: usize, const C: usize> Mul<Matrix<i64, R, C>> for i64 {
+    type Output = Matrix<i64, R, C>;
+
+    #[inline]
+    fn mul(self, other: Matrix<i64, R, C>) -> Self::Output {
+        other * self
+    }
+}
+
+impl<const R: usize, const C: usize> Mul<Matrix<i128, R, C>> for i128 {
+    type Output = Matrix<i128, R, C>;
+
+    #[inline]
+    fn mul(self, other: Matrix<i128, R, C>) -> Self::Output {
+        other * self
+    }
+}
+
+impl<const R: usize, const C: usize> Mul<Matrix<u8, R, C>> for u8 {
+    type Output = Matrix<u8, R, C>;
+
+    #[inline]
+    fn mul(self, other: Matrix<u8, R, C>) -> Self::Output {
+        other * self
+    }
+}
+
+impl<const R: usize, const C: usize> Mul<Matrix<u16, R, C>> for u16 {
+    type Output = Matrix<u16, R, C>;
+
+    #[inline]
+    fn mul(self, other: Matrix<u16, R, C>) -> Self::Output {
+        other * self
+    }
+}
+
+impl<const R: usize, const C: usize> Mul<Matrix<u32, R, C>> for u32 {
+    type Output = Matrix<u32, R, C>;
+
+    #[inline]
+    fn mul(self, other: Matrix<u32, R, C>) -> Self::Output {
+        other * self
+    }
+}
+
+impl<const R: usize, const C: usize> Mul<Matrix<u64, R, C>> for u64 {
+    type Output = Matrix<u64, R, C>;
+
+    #[inline]
+    fn mul(self, other: Matrix<u64, R, C>) -> Self::Output {
+        other * self
+    }
+}
+
+impl<const R: usize, const C: usize> Mul<Matrix<u128, R, C>> for u128 {
+    type Output = Matrix<u128, R, C>;
+
+    #[inline]
+    fn mul(self, other: Matrix<u128, R, C>) -> Self::Output {
+        other * self
+    }
+}
