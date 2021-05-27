@@ -79,6 +79,22 @@ impl NumericFloat for f64 {
     }
 }
 
+pub trait NumericSigNum {
+    fn signum_numeric(self) -> Self;
+}
+
+impl NumericSigNum for f32 {
+    fn signum_numeric(self) -> Self {
+        self.signum()
+    }
+}
+
+impl NumericSigNum for f64 {
+    fn signum_numeric(self) -> Self {
+        self.signum()
+    }
+}
+
 pub trait NumericSqrt {
     fn numeric_sqrt(self) -> Self;
 }
@@ -159,6 +175,12 @@ impl NumericAbs for i8 {
     }
 }
 
+impl NumericSigNum for i8 {
+    fn signum_numeric(self) -> Self {
+        self.signum()
+    }
+}
+
 impl Numeric for i16 {
     const ZERO: Self = 0;
     const ONE: Self = 1;
@@ -176,6 +198,12 @@ impl Numeric for i16 {
 impl NumericAbs for i16 {
     fn numeric_abs(self) -> Self {
         self.abs()
+    }
+}
+
+impl NumericSigNum for i16 {
+    fn signum_numeric(self) -> Self {
+        self.signum()
     }
 }
 
@@ -199,6 +227,12 @@ impl NumericAbs for i32 {
     }
 }
 
+impl NumericSigNum for i32 {
+    fn signum_numeric(self) -> Self {
+        self.signum()
+    }
+}
+
 impl Numeric for i64 {
     const ZERO: Self = 0;
     const ONE: Self = 1;
@@ -219,6 +253,12 @@ impl NumericAbs for i64 {
     }
 }
 
+impl NumericSigNum for i64 {
+    fn signum_numeric(self) -> Self {
+        self.signum()
+    }
+}
+
 impl Numeric for i128 {
     const ZERO: Self = 0;
     const ONE: Self = 1;
@@ -236,6 +276,12 @@ impl Numeric for i128 {
 impl NumericAbs for i128 {
     fn numeric_abs(self) -> Self {
         self.abs()
+    }
+}
+
+impl NumericSigNum for i128 {
+    fn signum_numeric(self) -> Self {
+        self.signum()
     }
 }
 

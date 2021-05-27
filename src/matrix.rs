@@ -262,6 +262,19 @@ impl<T: Numeric + NumericAbs, const R: usize, const C: usize> Matrix<T, R, C> {
     }
 }
 
+impl<T: Numeric + NumericSigNum, const R: usize, const C: usize> Matrix<T, R, C> {
+    /// Takes the absolute value of each component
+    pub fn signum(self) -> Self {
+        let mut v = Self::ZERO;
+        for i in 0..R {
+            for j in 0..C {
+                v.0[i][j] = self.0[i][j].signum_numeric()
+            }
+        }
+        v
+    }
+}
+
 impl<T: Numeric, const R: usize, const C: usize> Matrix<T, R, C> {
     pub fn reciprocal(&self) -> Self
     where
