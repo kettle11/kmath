@@ -1,5 +1,8 @@
 use crate::*;
-use std::usize;
+use std::{
+    ops::{Deref, DerefMut},
+    usize,
+};
 
 pub type Vector<T, const N: usize> = Matrix<T, N, 1>;
 
@@ -328,5 +331,68 @@ impl<T: Numeric> Vector<T, 3> {
     /// Only applicable to 3-dimensional `Vector`s.
     pub fn cross(self, other: Self) -> Self {
         (self.zxy().mul_by_component(other) - self.mul_by_component(other.zxy())).zxy()
+    }
+}
+
+#[repr(C)]
+pub struct XY<T> {
+    pub x: T,
+    pub y: T,
+}
+
+#[repr(C)]
+pub struct XYZ<T> {
+    pub x: T,
+    pub y: T,
+    pub z: T,
+}
+
+#[repr(C)]
+pub struct XYZW<T> {
+    pub x: T,
+    pub y: T,
+    pub z: T,
+    pub w: T,
+}
+
+impl<T> Deref for Vector<T, 2> {
+    type Target = XY<T>;
+
+    fn deref(&self) -> &Self::Target {
+        unsafe { std::mem::transmute(self.0.as_ptr()) }
+    }
+}
+
+impl<T> DerefMut for Vector<T, 2> {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        unsafe { std::mem::transmute(self.0.as_mut_ptr()) }
+    }
+}
+
+impl<T> Deref for Vector<T, 3> {
+    type Target = XYZ<T>;
+
+    fn deref(&self) -> &Self::Target {
+        unsafe { std::mem::transmute(self.0.as_ptr()) }
+    }
+}
+
+impl<T> DerefMut for Vector<T, 3> {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        unsafe { std::mem::transmute(self.0.as_mut_ptr()) }
+    }
+}
+
+impl<T> Deref for Vector<T, 4> {
+    type Target = XYZW<T>;
+
+    fn deref(&self) -> &Self::Target {
+        unsafe { std::mem::transmute(self.0.as_ptr()) }
+    }
+}
+
+impl<T> DerefMut for Vector<T, 4> {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        unsafe { std::mem::transmute(self.0.as_mut_ptr()) }
     }
 }
