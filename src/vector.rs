@@ -258,6 +258,10 @@ impl<T: Numeric + NumericSqrt, const N: usize> Vector<T, N> {
         self.dot(self).numeric_sqrt()
     }
 
+    pub fn length_squared(self) -> T {
+        self.dot(self)
+    }
+
     /// Returns a new `Vector` with a length of 1.0
     pub fn normalized(self) -> Self {
         self / self.dot(self).numeric_sqrt()

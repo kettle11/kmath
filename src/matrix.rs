@@ -218,8 +218,8 @@ impl<T: Numeric, const R: usize, const C: usize> Matrix<T, R, C> {
     /// Returns the value of the minimum component.
     pub fn min_component(self) -> T {
         let mut min = T::MAX;
-        for i in 0..R {
-            for j in 0..C {
+        for i in 0..C {
+            for j in 0..R {
                 min = self.0[i][j].numeric_min(min)
             }
         }
@@ -229,8 +229,8 @@ impl<T: Numeric, const R: usize, const C: usize> Matrix<T, R, C> {
     /// Returns the value of the maximum component.
     pub fn max_component(self) -> T {
         let mut max = T::MAX;
-        for i in 0..R {
-            for j in 0..C {
+        for i in 0..C {
+            for j in 0..R {
                 max = self.0[i][j].numeric_max(max)
             }
         }
@@ -247,14 +247,25 @@ impl<T: Numeric, const R: usize, const C: usize> Matrix<T, R, C> {
         }
         output
     }
+
+    /// Divides each component by the corresponding component from `other`.
+    pub fn div_by_component(self, other: Self) -> Self {
+        let mut output = Self::ZERO;
+        for i in 0..C {
+            for j in 0..R {
+                output.0[i][j] = self.0[i][j] / other.0[i][j]
+            }
+        }
+        output
+    }
 }
 
 impl<T: Numeric + NumericAbs, const R: usize, const C: usize> Matrix<T, R, C> {
     /// Takes the absolute value of each component
     pub fn abs(self) -> Self {
         let mut v = Self::ZERO;
-        for i in 0..R {
-            for j in 0..C {
+        for i in 0..C {
+            for j in 0..R {
                 v.0[i][j] = self.0[i][j].numeric_abs()
             }
         }
@@ -266,8 +277,8 @@ impl<T: Numeric + NumericSigNum, const R: usize, const C: usize> Matrix<T, R, C>
     /// Takes the absolute value of each component
     pub fn signum(self) -> Self {
         let mut v = Self::ZERO;
-        for i in 0..R {
-            for j in 0..C {
+        for i in 0..C {
+            for j in 0..R {
                 v.0[i][j] = self.0[i][j].signum_numeric()
             }
         }
@@ -827,7 +838,7 @@ impl<T: Eq, const ROWS: usize, const COLUMNS: usize> Matrix<T, ROWS, COLUMNS> {
     }
 }
 
-// ------- More Mul implementations --------
+// ------- More Mul / Div implementations --------
 // I don't like these implementations but couldn't figure out a better way quickly.
 // It'd be great to remove them and implement this generically.
 
@@ -936,5 +947,23 @@ impl<const R: usize, const C: usize> Mul<Matrix<u128, R, C>> for u128 {
     #[inline]
     fn mul(self, other: Matrix<u128, R, C>) -> Self::Output {
         other * self
+    }
+}
+
+impl<const R: usize, const C: usize> Div<Matrix<f32, R, C>> for f32 {
+    type Output = Matrix<f32, R, C>;
+
+    #[inline]
+    fn div(self, other: Matrix<f32, R, C>) -> Self::Output {
+        other.reciprocal() * self
+    }
+}
+
+impl<const R: usize, const C: usize> Div<Matrix<f64, R, C>> for f64 {
+    type Output = Matrix<f64, R, C>;
+
+    #[inline]
+    fn div(self, other: Matrix<f64, R, C>) -> Self::Output {
+        other.reciprocal() * self
     }
 }
