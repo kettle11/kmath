@@ -1,4 +1,4 @@
-use std::ops::{Index, Mul};
+use std::ops::{Index, Mul, Add};
 
 use crate::*;
 
@@ -31,6 +31,10 @@ impl<T: NumericFloat> Quaternion<T> {
 
     pub fn rotate_vector3(&self, v: Vector<T, 3>) -> Vector<T, 3> {
         self.mul(v)
+    }
+
+    pub fn normalized(self) -> Self {
+        Self(self.0.normalized())
     }
 }
 
@@ -65,6 +69,12 @@ impl<T: NumericFloat> Index<usize> for Quaternion<T> {
     }
 }
 
+impl<T: NumericFloat> From<Vector<T, 4>> for Quaternion<T> {
+    fn from(value: Vector<T, 4>) -> Quaternion<T> {
+        Self(value)
+    }
+}
+
 impl<T: NumericFloat> From<(T, T, T, T)> for Quaternion<T> {
     fn from(value: (T, T, T, T)) -> Quaternion<T> {
         Self([[value.0, value.1, value.2, value.3]].into())
@@ -80,5 +90,21 @@ impl<T: NumericFloat> From<[T; 4]> for Quaternion<T> {
 impl<T: NumericFloat> From<Quaternion<T>> for [T; 4] {
     fn from(value: Quaternion<T>) -> [T; 4] {
         value.0.into()
+    }
+}
+
+impl<T: NumericFloat> Add<Quaternion<T>> for Quaternion<T> {
+    type Output = Self;
+  
+    fn add(self, other: Self) -> Self {
+        Self(self.0.add(other.0))
+    }
+}
+
+impl<T: NumericFloat> Mul<T> for Quaternion<T> {
+    type Output = Self;
+
+    fn mul(self, other: T) -> Self {
+        Self(self.0 * other)
     }
 }

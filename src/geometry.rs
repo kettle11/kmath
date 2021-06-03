@@ -1,6 +1,7 @@
 use crate::*;
 
 /// A circle in 2D, a sphere in 3D.
+#[derive(Clone, Debug, Copy)]
 pub struct Ball<T, const DIMENSIONS: usize> {
     pub center: Vector<T, DIMENSIONS>,
     pub radius: T,
@@ -51,6 +52,10 @@ impl<T: Numeric + PartialOrd + 'static, const DIMENSIONS: usize> BoundingBox<T, 
 
     pub fn new(min: Vector<T, DIMENSIONS>, max: Vector<T, DIMENSIONS>) -> Self {
         Self { min, max }
+    }
+
+    pub fn size(self) -> Vector<T, DIMENSIONS> {
+        self.max - self.min
     }
 
     pub fn from_points<'a>(points: impl IntoIterator<Item = &'a Vector<T, DIMENSIONS>>) -> Self {
