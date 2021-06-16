@@ -228,7 +228,7 @@ impl<T: Numeric, const R: usize, const C: usize> Matrix<T, R, C> {
 
     /// Returns the value of the maximum component.
     pub fn max_component(self) -> T {
-        let mut max = T::MAX;
+        let mut max = T::MIN;
         for i in 0..C {
             for j in 0..R {
                 max = self.0[i][j].numeric_max(max)
