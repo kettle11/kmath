@@ -32,6 +32,7 @@ pub trait NumericFloat: Numeric + NumericSqrt + NumericAbs + Neg<Output = Self> 
     fn copysign_numeric(self, sign: Self) -> Self;
     fn min_mumeric(self, other: Self) -> Self;
     fn max_mumeric(self, other: Self) -> Self;
+    fn powf_numeric(self, other: Self) -> Self;
 }
 
 impl NumericFloat for f32 {
@@ -55,6 +56,9 @@ impl NumericFloat for f32 {
     fn max_mumeric(self, other: Self) -> Self {
         self.max(other)
     }
+    fn powf_numeric(self, other: Self) -> Self {
+        self.powf(other)
+    }
 }
 
 impl NumericFloat for f64 {
@@ -76,6 +80,9 @@ impl NumericFloat for f64 {
     }
     fn max_mumeric(self, other: Self) -> Self {
         self.max(other)
+    }
+    fn powf_numeric(self, other: Self) -> Self {
+        self.powf(other)
     }
 }
 

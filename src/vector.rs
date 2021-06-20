@@ -305,6 +305,24 @@ impl<T: Numeric> Vector<T, 3> {
         v.0[0][2] = T::ONE;
         v
     };
+    pub const XY: Self = {
+        let mut v = Self::ZERO;
+        v.0[0][0] = T::ONE;
+        v.0[0][1] = T::ONE;
+        v
+    };
+    pub const XZ: Self = {
+        let mut v = Self::ZERO;
+        v.0[0][0] = T::ONE;
+        v.0[0][2] = T::ONE;
+        v
+    };
+    pub const YZ: Self = {
+        let mut v = Self::ZERO;
+        v.0[0][1] = T::ONE;
+        v.0[0][2] = T::ONE;
+        v
+    };
 }
 
 impl<T: Numeric> Vector<T, 4> {

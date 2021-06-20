@@ -345,6 +345,19 @@ impl<T: Numeric, const R: usize, const C: usize> Matrix<T, R, C> {
         // vectors
         unsafe { std::slice::from_raw_parts(std::mem::transmute(&self.0), R * C) }
     }
+
+    pub fn powf(&self, other: Self) -> Self
+    where
+        T: NumericFloat,
+    {
+        let mut v = Self::ZERO;
+        for i in 0..C {
+            for j in 0..R {
+                v.0[i][j] = self.0[i][j].powf_numeric(other.0[i][j]);
+            }
+        }
+        v
+    }
 }
 
 impl<T: NumericFloat> Matrix<T, 4, 4> {
@@ -965,5 +978,49 @@ impl<const R: usize, const C: usize> Div<Matrix<f64, R, C>> for f64 {
     #[inline]
     fn div(self, other: Matrix<f64, R, C>) -> Self::Output {
         other.reciprocal() * self
+    }
+}
+
+// These `as` casts be implemented generically
+impl<const R: usize, const C: usize> Matrix<f32, R, C> {
+    pub fn as_i32(&self) -> Matrix<i32, R, C> {
+        let mut output = Matrix::<i32, R, C>::ZERO;
+        for i in 0..C {
+            for j in 0..R {
+                output.0[i][j] = self.0[i][j] as i32;
+            }
+        }
+        output
+    }
+}
+
+impl<const R: usize, const C: usize> Matrix<i32, R, C> {
+    pub fn as_f32(&self) -> Matrix<f32, R, C> {
+        let mut output = Matrix::<f32, R, C>::ZERO;
+        for i in 0..C {
+            for j in 0..R {
+                output.0[i][j] = self.0[i][j] as f32;
+            }
+        }
+        output
+    }
+}
+
+// TODO: Make this work for non-numeric types
+impl<T: Numeric, const R: usize, const C: usize> Matrix<T, R, C> {
+    /// For each element select either from `if_true` or `if_false`
+    /// based on corresponding boolean in `mask`.
+    pub fn select(mask: Matrix<bool, R, C>, if_true: Self, if_false: Self) -> Self {
+        let mut output = Self::default();
+        for i in 0..C {
+            for j in 0..R {
+                output.0[i][j] = if mask.0[i][j] {
+                    if_true.0[i][j]
+                } else {
+                    if_false.0[i][j]
+                };
+            }
+        }
+        output
     }
 }

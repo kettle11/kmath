@@ -1,4 +1,4 @@
-use std::ops::{Index, Mul, Add};
+use std::ops::{Add, Index, Mul};
 
 use crate::*;
 
@@ -95,7 +95,7 @@ impl<T: NumericFloat> From<Quaternion<T>> for [T; 4] {
 
 impl<T: NumericFloat> Add<Quaternion<T>> for Quaternion<T> {
     type Output = Self;
-  
+
     fn add(self, other: Self) -> Self {
         Self(self.0.add(other.0))
     }

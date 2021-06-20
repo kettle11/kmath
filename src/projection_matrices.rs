@@ -6,7 +6,7 @@ pub fn perspective_infinite_gl<T: NumericFloat>(
     aspect_ratio: T,
     z_near: T,
 ) -> Matrix<T, 4, 4> {
-    let t = (vertical_field_of_view_radians / T::TWO).tan_numeric();
+    let t = (vertical_field_of_view_radians * T::HALF).tan_numeric();
     let sy = T::ONE / t;
     let sx = sy / aspect_ratio;
     Matrix([
@@ -24,7 +24,7 @@ pub fn perspective_gl<T: NumericFloat>(
     z_far: T,
 ) -> Matrix<T, 4, 4> {
     let inv_length = T::ONE / (z_near - z_far);
-    let f = T::ONE / (T::HALF * vertical_field_of_view_radians).tan_numeric();
+    let f = T::ONE / (vertical_field_of_view_radians * T::HALF).tan_numeric();
     let a = f / aspect_ratio;
     let b = (z_near + z_far) * inv_length;
     let c = (T::TWO * z_near * z_far) * inv_length;
@@ -52,7 +52,7 @@ pub fn orthographic_gl<T: NumericFloat>(
     let fpn = far + near;
     Matrix([
         [T::TWO / rml, T::ZERO, T::ZERO, T::ZERO],
-        [T::ZERO, -T::TWO / tmb, T::ZERO, T::ZERO],
+        [T::ZERO, T::TWO / tmb, T::ZERO, T::ZERO],
         [T::ZERO, T::ZERO, -T::TWO / fmn, T::ZERO],
         [-(rpl / rml), -(tpb / tmb), -(fpn / fmn), T::ONE],
     ])
