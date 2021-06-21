@@ -346,6 +346,13 @@ impl<T: Numeric, const R: usize, const C: usize> Matrix<T, R, C> {
         unsafe { std::slice::from_raw_parts(std::mem::transmute(&self.0), R * C) }
     }
 
+    #[inline]
+    pub fn as_slice_mut(&mut self) -> &mut [T] {
+        // This is safe because we are statically bounding our slices to the size of these
+        // vectors
+        unsafe { std::slice::from_raw_parts_mut(std::mem::transmute(&mut self.0), R * C) }
+    }
+
     pub fn powf(&self, other: Self) -> Self
     where
         T: NumericFloat,
@@ -1022,5 +1029,23 @@ impl<T: Numeric, const R: usize, const C: usize> Matrix<T, R, C> {
             }
         }
         output
+    }
+}
+
+impl<'a, T: Numeric, const R: usize, const C: usize> IntoIterator for &'a Matrix<T, R, C> {
+    type Item = &'a T;
+    type IntoIter = std::slice::Iter<'a, T>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        self.as_slice().iter()
+    }
+}
+
+impl<'a, T: Numeric, const R: usize, const C: usize> IntoIterator for &'a mut Matrix<T, R, C> {
+    type Item = &'a mut T;
+    type IntoIter = std::slice::IterMut<'a, T>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        self.as_slice_mut().iter_mut()
     }
 }

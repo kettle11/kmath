@@ -1,5 +1,5 @@
 mod matrix;
-mod numeric_traits;
+pub mod numeric_traits;
 mod quaternion;
 mod vector;
 
