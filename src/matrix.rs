@@ -7,13 +7,35 @@ use std::{
     usize,
 };
 
+use kserde::Serialize;
+
 use crate::*;
 
 #[derive(Copy, Clone, Debug, PartialEq, PartialOrd, Hash)]
 #[repr(C)]
-/// R is the number of rows.
-/// C is the number of columns
 pub struct Matrix<T, const ROWS: usize, const COLUMNS: usize>(pub(crate) [[T; ROWS]; COLUMNS]);
+
+// Manually tweaked serialization / deserialization implementations.
+impl<KSer: kserde::Serializer, T: Serialize<KSer>, const ROWS: usize, const COLUMNS: usize>
+    kserde::Serialize<KSer> for Matrix<T, ROWS, COLUMNS>
+{
+    fn serialize(&self, serializer: &mut KSer) {
+        serializer.serialize(&self.0);
+    }
+}
+
+impl<
+        'kserde,
+        KDes: kserde::Deserializer<'kserde>,
+        T: kserde::Deserialize<'kserde, KDes>,
+        const ROWS: usize,
+        const COLUMNS: usize,
+    > kserde::Deserialize<'kserde, KDes> for Matrix<T, ROWS, COLUMNS>
+{
+    fn deserialize(deserializer: &mut KDes) -> Option<Self> {
+        Some(Self(<[[T; ROWS]; COLUMNS]>::deserialize(deserializer)?))
+    }
+}
 
 impl<T: Numeric, const R: usize, const C: usize> Default for Matrix<T, R, C> {
     fn default() -> Self {
