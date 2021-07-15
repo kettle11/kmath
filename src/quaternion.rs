@@ -5,6 +5,27 @@ use crate::*;
 #[derive(Copy, Clone, Debug, Hash)]
 pub struct Quaternion<T: NumericFloat>(pub(crate) Vector<T, 4>);
 
+use kserde::*;
+// Manually tweaked serialization / deserialization implementations.
+impl<KSer: kserde::Serializer, T: Serialize<KSer> + NumericFloat> kserde::Serialize<KSer>
+    for Quaternion<T>
+{
+    fn serialize(&self, serializer: &mut KSer) {
+        serializer.serialize(&self.0);
+    }
+}
+
+impl<
+        'kserde,
+        KDes: kserde::Deserializer<'kserde>,
+        T: kserde::Deserialize<'kserde, KDes> + NumericFloat,
+    > kserde::Deserialize<'kserde, KDes> for Quaternion<T>
+{
+    fn deserialize(deserializer: &mut KDes) -> Option<Self> {
+        Some(Self(<Vector<T, 4>>::deserialize(deserializer)?))
+    }
+}
+
 impl<T: NumericFloat> Quaternion<T> {
     pub const IDENTITY: Self = Quaternion(Vector::<T, 4>::new(T::ZERO, T::ZERO, T::ZERO, T::ONE));
 
