@@ -361,3 +361,17 @@ impl Numeric for u128 {
         self.max(other)
     }
 }
+
+impl Numeric for usize {
+    const ZERO: Self = 0;
+    const ONE: Self = 1;
+    const TWO: Self = 2;
+    const MAX: Self = Self::MAX;
+    const MIN: Self = Self::MIN;
+    fn numeric_min(self, other: Self) -> Self {
+        self.min(other)
+    }
+    fn numeric_max(self, other: Self) -> Self {
+        self.max(other)
+    }
+}
