@@ -759,6 +759,22 @@ impl<T: Numeric, const R: usize, const C: usize, const V: usize> TryFrom<&[T; V]
     }
 }
 
+impl<T: Numeric, const R: usize, const C: usize> TryFrom<&[T]>
+    for Matrix<T, R, C>
+{
+    type Error = TryFromSliceError;
+    fn try_from(value: &[T]) -> Result<Self, Self::Error> {
+        let mut v = Self::ZERO;
+        let mut offset = 0;
+        for c in 0..C {
+            let end = offset + R;
+            v.0[c] = value[offset..end].try_into()?;
+            offset = end;
+        }
+        Ok(v)
+    }
+}
+
 impl<T: NumericFloat> Matrix<T, 4, 4> {
     #[inline]
     fn faster_mul(&self, other: &Self) -> Self {
